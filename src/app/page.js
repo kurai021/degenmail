@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 import MdEditor from "./components/mdeditor"
+import ReactMarkdown from 'react-markdown'
 
 export default function Home() {
 
@@ -14,12 +15,13 @@ export default function Home() {
   const [receivedMessages, setReceivedMessages] = useState([]);
   const [userAddress, setUserAddress] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [expandedMessage, setExpandedMessage] = useState([]);
 
   const handleSend = async () => {
     if (userAddress) {
       try {
         console.log(userAddress)
-        const response = await axios.post("/api/send", { userAddress, receiver, content });
+        const response = await axios.post("/api/send", { receiver, content, userAddress });
         setResponseMessage("Mensaje enviado correctamente");
 
         setShowModal(false)
@@ -35,7 +37,6 @@ export default function Home() {
       try {
         const response = await axios.get(`/api/receive?userAddress=${userAddress}`); // Aquí puedes ajustar el mensajeId para obtener nuevos mensajes
         const messages = response.data;
-        console.log(messages)
         // Actualizar el estado con los mensajes del usuario
         setReceivedMessages(messages);
       } catch (error) {
@@ -71,9 +72,9 @@ export default function Home() {
             <div className="messagesList">
               {receivedMessages.length > 0 ? (
                 receivedMessages.slice().reverse().map((message, index) => (
-                  <div key={index} className="border p-2 rounded-lg mb-2">
+                  <div key={index} className="border p-2 rounded-lg mb-2" onClick={() => setExpandedMessage(message)}>
                     <p>Remitente: {message.realSender}</p>
-                    <p>Contenido: {message.content}</p>
+                    <p>Contenido: {message.content.length > 100 ? `${message.content.substring(0, 100)}...` : message.content}</p>
                     <p>Timestamp: {new Date(message.timestamp * 1000).toLocaleString()}</p>
                   </div>
                 ))
@@ -86,7 +87,7 @@ export default function Home() {
 
         <div className="basis-3/4 mx-auto m-4 p-4 border rounded-lg">
           <h1 className="text-3xl font-semibold mb-4">DegenMail</h1>
-          <button data-modal-target="staticModal" data-modal-toggle="staticModal" class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button" onClick={() => setShowModal(true)}>
+          <button data-modal-target="staticModal" data-modal-toggle="staticModal" className="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button" onClick={() => setShowModal(true)}>
             Escribir un mensaje
           </button>
 
@@ -96,6 +97,16 @@ export default function Home() {
           >
             Actualizar
           </button>
+
+          {expandedMessage.content ? (
+            <div className="message">
+              <h2>De: {expandedMessage.realSender}</h2>
+              <h3>Fecha: {new Date(expandedMessage.timestamp * 1000).toLocaleString()}</h3>
+              <div className="messageContent">
+                <ReactMarkdown>{expandedMessage.content}</ReactMarkdown>
+              </div>
+            </div>
+          ) : null}
 
           {showModal ? (
             <>

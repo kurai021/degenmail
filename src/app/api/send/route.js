@@ -9,9 +9,8 @@ import { NextResponse } from 'next/server';
 export async function POST(req, res) {
 
     const data = await req.json()
-    const { realSender, receiver, content } = data;
+    const { receiver, content, userAddress } = data;
 
-    console.log(data)
     try {
         // Conexión al contrato en la red de Sepolia
         const provider = new ethers.JsonRpcProvider(process.env.ALCHEMY_API_KEY_URL);
@@ -23,8 +22,11 @@ export async function POST(req, res) {
         const contractAddress = process.env.CONTRACT; // Reemplaza por la dirección de tu contrato desplegado en Sepolia
         const contract = new ethers.Contract(contractAddress, abi, signer);
 
+        console.log(getAddress(receiver))
+        console.log(content)
+        console.log(userAddress)
         // Envío del mensaje utilizando la función sendMessage del contrato
-        await contract.sendMessage(getAddress(receiver), content, realSender);
+        await contract.sendMessage(getAddress(receiver), content, userAddress);
 
         return NextResponse.json({ message: "Message Sent", success: true });
     } catch (error) {

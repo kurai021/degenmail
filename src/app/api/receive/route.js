@@ -39,7 +39,6 @@ export async function GET(req, res) {
                 const realSender = result[2]
                 const timestamp = Number(result[3]);
                 const content = result[4];
-                const parentId = Number(result[5]);
 
                 // Agregar el mensaje al array de mensajes del usuario
                 messages.push({
@@ -48,8 +47,7 @@ export async function GET(req, res) {
                     realSender,
                     receiver,
                     timestamp,
-                    content,
-                    parentId,
+                    content
                 });
             }
         }
